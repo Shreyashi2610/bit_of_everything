@@ -1,0 +1,328 @@
+<!-- Code from d3-graph-gallery.com -->
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<!-- Load d3.js -->
+<script src="https://d3js.org/d3.v4.js"></script>
+
+<!-- Load color scale -->
+<script src="https://d3js.org/d3-selection-multi.v1.min.js"></script>
+<script src="https://d3js.org/d3-scale-chromatic.v1.min.js"></script>
+<script src="https://d3js.org/d3-color.v1.min.js"></script>
+
+<!-- Create a div where the graph will take place -->
+<div id="my_dataviz"></div>
+
+<!-- A bit of CSS: change stroke color of circle on hover (white -> black) -->
+<style>
+.bubbles {
+  stroke-width: 1px;
+  stroke: grey;
+  opacity: .8
+}
+.bubbles:hover {
+  stroke: yellow;
+}
+
+.grid .tick {
+    stroke: lightgrey;
+    opacity: 0.3;
+}
+.grid path {
+      stroke-width: 0;
+}
+</style>
+
+
+<script>
+
+// set the dimensions and margins of the graph
+var margin = {top: 100, right: 150, bottom: 60, left: 50},
+    width = 1000 - margin.left - margin.right,
+    height = 800 - margin.top - margin.bottom;
+
+// adding chart title
+
+// append the svg object to the body of the page
+var svg = d3.select("#my_dataviz")
+  .append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform",
+          "translate(" + margin.left + "," + margin.top + ")");
+
+svg.append("text")
+        .attr("x", (width / 2))             
+        .attr("y", 0 - (margin.top/3))
+        .attr("text-anchor", "middle")  
+        .style("font-size", "30px") 
+        .style("font-weight", 200)  
+        .text("US State Statistics");
+
+//var colorColumn = Pop_Growth;
+
+//Read the data
+d3.csv("https://raw.githubusercontent.com/Shreyashi2610/D3Assignment2/master/states2.csv", function(data) {
+
+  // ---------------------------//
+  //       AXIS  AND SCALE      //
+  // ---------------------------//
+
+  // Add X axis
+  var x = d3.scaleLinear()
+    .domain([5,25])
+    .range([ 0, width ]);
+  svg.append("g")
+    .attr("transform", "translate(0," + height + ")")
+    .call(d3.axisBottom(x).ticks(3));
+
+  // Add X axis label:
+  svg.append("text")
+      .attr("text-anchor", "end")
+      .attr("x", width)
+      .attr("y", height+50 )
+      .text("Poverty Rate (%)");
+
+  // Add Y axis
+  var y = d3.scaleLinear()
+    .domain([4,14])
+    .range([ height, 0]);
+  svg.append("g")
+    .call(d3.axisLeft(y));
+
+  // Add Y axis label:
+  svg.append("text")
+      .attr("text-anchor", "end")
+      .attr("x", 0)
+      .attr("y", -20 )
+      .text("Total Tax (%)")
+      .attr("text-anchor", "start")
+
+  // gridlines in x axis function
+      function make_x_gridlines() {   
+            return d3.axisBottom(x)
+                .ticks(5)
+        };
+
+      // gridlines in y axis function
+      function make_y_gridlines() {   
+          return d3.axisLeft(y)
+              .ticks(10)
+      };
+
+      // add the X gridlines
+      svg.append("g")      
+          .attr("class", "grid")
+          .attr("transform", "translate(0," + height + ")")
+          .call(make_x_gridlines()
+              .tickSize(-height)
+              .tickFormat("")
+          );
+
+      // add the Y gridlines
+      svg.append("g")      
+          .attr("class", "grid")
+          .call(make_y_gridlines()
+              .tickSize(-width)
+              .tickFormat("")
+          );
+
+  // Add a scale for bubble size
+  var z = d3.scaleSqrt()
+    .domain([573700, 39776850])
+    .range([ 2, 30]);
+
+
+  var myColor = d3.scaleLinear()
+    .domain([-1,3])
+    .range(["rgb(0, 40, 170)","rgb(0, 187, 40)"]);
+    // https://github.com/d3/d3-scale-chromatic/blob/master/README.md#schemeSet1
+
+
+  // ---------------------------//
+  //      TOOLTIP               //
+  // ---------------------------//
+
+  // -1- Create a tooltip div that is hidden by default:
+  var tooltip = d3.select("#my_dataviz")
+    .append("div")
+      .style("opacity", 0)
+      .attr("class", "tooltip")
+      .style("background-color", "black")
+      .style("border-radius", "5px")
+      .style("padding", "10px")
+      .style("color", "white")
+
+  // -2- Create 3 functions to show / update (when mouse move but stay on same circle) / hide the tooltip
+  var showTooltip = function(d) {
+    tooltip
+      .transition()
+      .duration(200)
+    tooltip
+      .style("opacity", 1)
+      .html("State: " + d.State)
+  }
+  var hideTooltip = function(d) {
+    tooltip
+      .transition()
+      .duration(200)
+      .style("opacity", 0)
+  }
+
+
+  // ---------------------------//
+  //       HIGHLIGHT GROUP      //
+  // ---------------------------//
+
+  // What to do when one group is hovered
+  var highlight = function(d){
+    // reduce opacity of all groups
+    d3.selectAll(".bubbles").style("opacity", .05)
+    // expect the one that is hovered
+    d3.selectAll("."+d).style("opacity", 1)
+  }
+
+  // And when it is not hovered anymore
+  var noHighlight = function(d){
+    d3.selectAll(".bubbles").style("opacity", 1)
+  }
+
+
+  // ---------------------------//
+  //       CIRCLES              //
+  // ---------------------------//
+
+  // Add dots
+  svg.append('g')
+    .selectAll("dot")
+    .data(data)
+    .enter()
+    .append("circle")
+      .attr("class", function(d) { return "bubbles " + d.State })
+      .attr("cx", function (d) { return x(d.Poverty_Rate); } )
+      .attr("cy", function (d) { return y(d.Total_Tax); } )
+      .attr("r", function (d) { return z(d.Population); } )
+      .style("fill", function (d) { return myColor(d.Pop_Growth); } )
+    // -3- Trigger the functions for hover
+    .on("mouseover", showTooltip )
+    .on("mouseleave", hideTooltip )
+
+
+
+    // ---------------------------//
+    //       LEGEND              //
+    // ---------------------------//
+
+    // Add legend: circles
+    var valuesToShow = [1000000, 10000000, 50000000]
+    var xCircle = 875
+    var xLabel = 825
+    svg
+      .selectAll("legend")
+      .data(valuesToShow)
+      .enter()
+      .append("circle")
+        .attr("cx", xCircle)
+        .attr("cy", function(d){ return height - 50 - z(d) } )
+        .attr("r", function(d){ return z(d) })
+        .style("fill", "none")
+        .attr("stroke", "black")
+
+    // Add legend: segments
+    svg
+      .selectAll("legend")
+      .data(valuesToShow)
+      .enter()
+      .append("line")
+        .attr('x1', function(d){ return xCircle + z(d) } )
+        .attr('x2', xLabel)
+        .attr('y1', function(d){ return height - 50 - z(d) } )
+        .attr('y2', function(d){ return height - 50 - z(d) } )
+        .attr('stroke', 'black')
+        .style('stroke-dasharray', ('2,2'))
+
+    // Add legend: labels
+    svg
+      .selectAll("legend")
+      .data(valuesToShow)
+      .enter()
+      .append("text")
+        .attr('x', xLabel-15)
+        .attr('y', function(d){ return height - 50 - z(d) } )
+        .text( function(d){ return d/1000000 } )
+        .style("font-size", 12)
+        .attr('alignment-baseline', 'middle')
+
+    // Legend title
+    svg.append("text")
+      .attr('x', xCircle)
+      .attr("y", height - 50 +30)
+      .text("Population (M)")
+      .attr("text-anchor", "middle")
+
+    //Append a defs (for definition) element to your SVG
+    var defs = svg.append("defs");
+
+    //Append a linearGradient element to the defs and give it a unique id
+    var linearGradient = defs.append("linearGradient")
+      .attr("id", "linear-gradient");
+
+    ///Vertical gradient
+    linearGradient
+        .attr("x1", "0%")
+        .attr("y1", "0%")
+        .attr("x2", "0%")
+        .attr("y2", "100%");
+
+
+    //Set the color for the start (0%)
+    linearGradient.append("stop")
+        .attr("offset", "0%")
+        .attr("stop-color", "rgb(0, 40, 170)"); 
+
+    //Set the color for the end (100%)
+    linearGradient.append("stop")
+        .attr("offset", "100%")
+        .attr("stop-color", "rgb(0, 187, 40)"); 
+
+    //Draw the rectangle and fill with gradient
+    svg.append("rect")
+        .attr("x", 850)
+        .attr("y", 100)
+        .attr("width", 30)
+        .attr("height", 300)
+        .style("fill", "url(#linear-gradient)");
+
+    // Legend label
+    svg.append("text")
+      .attr('x', 885)
+      .attr("y", 105)
+      .text("-1%")
+      .style("font-size", 12)
+      .attr('alignment-baseline', 'middle');
+
+    svg.append("text")
+      .attr('x', 885)
+      .attr("y", 250)
+      .text("1.5%")
+      .style("font-size", 12)
+      .attr('alignment-baseline', 'middle');
+
+    svg.append("text")
+      .attr('x', 885)
+      .attr("y", 395)
+      .text("3%")
+      .style("font-size", 12)
+      .attr('alignment-baseline', 'middle');
+
+
+    // Legend title
+    svg.append("text")
+      .attr('x', 875)
+      .attr("y", 420)
+      .text("PopulationGrowth(%)")
+      .attr("text-anchor", "middle");
+
+  })
+</script>

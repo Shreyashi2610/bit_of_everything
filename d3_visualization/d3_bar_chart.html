@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+
+<!-- Load d3.js -->
+<script src="https://d3js.org/d3.v4.js"></script>
+
+<!-- Create a div where the graph will take place -->
+<div id="D3Asgnmnt1"></div>
+
+<style> /* set the CSS for gridlines*/
+
+  .line {
+    fill: none;
+    stroke: steelblue;
+    stroke-width: 2px;
+  }
+  
+  .grid line {
+    stroke: lightgrey;
+    stroke-opacity: 0.7;
+    shape-rendering: crispEdges;
+  }
+  
+  .grid path {
+    stroke-width: 0;
+  }
+  
+</style>
+
+<script>
+
+
+    // set the dimensions and margins of the graph
+    var margin = {top: 20, right: 150, bottom: 40, left: 110},
+        width = 600 - margin.left - margin.right,
+        height = 1000 - margin.top - margin.bottom;
+
+    // adding chart title
+    d3.select("#D3Asgnmnt1")
+      .append("h2")
+      .text("Sorted by Name");
+    
+    // append the svg object to the body of the page
+    var chart1 = d3.select("#D3Asgnmnt1")
+      .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+        .attr("transform",
+              "translate(" + margin.left + "," + margin.top + ")");
+
+    
+    // Parse the Data
+    d3.csv('https://raw.githubusercontent.com/Shreyashi2610/D3Asgnmnt1/master/data1.csv', function(data) {
+      
+      // Add X axis
+      var x = d3.scaleLinear()
+        .domain([0, 190])
+        .range([ 0, width]);
+      
+      chart1.append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x))
+        .selectAll("text")
+          .attr("transform", "translate(-10,0)rotate(-45)")
+          .style("text-anchor", "end");
+      // text label for the x axis
+      chart1.append("text")             
+        .attr("transform",
+              "translate(" + (width/2) + " ," + 
+                             (height + margin.top + 20) + ")")
+        .style("text-anchor", "middle")
+        .text("Height in cm");
+    
+      // Y axis
+      var y = d3.scaleBand()
+        .range([ 0, height ])
+        .domain(data.map(function(d) { return d.Name; }))
+        .padding(.1);
+      chart1.append("g")
+        .call(d3.axisLeft(y));
+
+      // gridlines in x axis function
+      function make_x_gridlines() {		
+            return d3.axisBottom(x)
+                .ticks(5)
+        };
+
+      // gridlines in y axis function
+      function make_y_gridlines() {		
+          return d3.axisLeft(y)
+              .ticks(5)
+      };
+
+      // add the X gridlines
+      chart1.append("g")			
+          .attr("class", "grid")
+          .attr("transform", "translate(0," + height + ")")
+          .call(make_x_gridlines()
+              .tickSize(-height)
+              .tickFormat("")
+          );
+
+      // add the Y gridlines
+      chart1.append("g")			
+          .attr("class", "grid")
+          .call(make_y_gridlines()
+              .tickSize(-width)
+              .tickFormat("")
+          );
+    
+      //Bars
+      chart1.selectAll("myRect")
+        .data(data)
+        .enter()
+        .append("rect")
+        .attr("x", x(0) )
+        .attr("y", function(d) { return y(d.Name); })
+        .attr("width", function(d) { return x(d.Height); })
+        .attr("height", y.bandwidth() )
+        .attr("fill", function(d) {
+            if (d.EyeColor == "Black") {
+            return "#262626";
+            } else if (d.EyeColor == "Brown") {
+            return "#8b7355";
+            }
+            else {return "#7ac5cd";}
+        });
+
+
+        // add legend   
+        chart1.append("circle")
+          .attr("cx",width+(margin.right/3))
+          .attr("cy",130)
+          .attr("r", 8)
+          .style("fill", '#262626')
+        chart1.append("circle")
+          .attr("cx",width+(margin.right/3))
+          .attr("cy",160)
+          .attr("r", 8)
+          .style("fill", '#8b7355')
+        chart1.append("circle")
+          .attr("cx",width+(margin.right/3))
+          .attr("cy",190)
+          .attr("r", 8)
+          .style("fill", '#7ac5cd')
+        chart1.append("text")
+          .attr("x", width+(margin.right/3)+10)
+          .attr("y", 130)
+          .text("Black Eyes")
+          .style("font-size", "12px")
+          .attr("alignment-baseline","middle")
+        chart1.append("text")
+          .attr("x", width+(margin.right/3)+10)
+          .attr("y", 160).text("Brown Eyes")
+          .style("font-size", "12px")
+          .attr("alignment-baseline","middle")
+        chart1.append("text")
+          .attr("x", width+(margin.right/3)+10)
+          .attr("y", 190).text("Blue Eyes")
+          .style("font-size", "12px")
+          .attr("alignment-baseline","middle")
+    
+    })
+
+    // adding chart title
+    d3.select("#D3Asgnmnt1")
+      .append("h2")
+      .text("Sorted by Height");
+
+    var chart2 = d3.select("#D3Asgnmnt1")
+      .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+      .append("g")
+        .attr("transform",
+              "translate(" + margin.left + "," + margin.top + ")");
+    
+    // Second chart - sorted by Height
+    // Parse the Data
+    d3.csv('https://raw.githubusercontent.com/Shreyashi2610/D3Asgnmnt1/master/data2.csv', function(data) {
+      
+      // Add X axis
+      var x = d3.scaleLinear()
+        .domain([0, 190])
+        .range([ 0, width]);
+      chart2.append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x))
+        .selectAll("text")
+          .attr("transform", "translate(-10,0)rotate(-45)")
+          .style("text-anchor", "end");
+
+      // text label for the x axis
+      chart2.append("text")             
+        .attr("transform",
+              "translate(" + (width/2) + " ," + 
+                             (height + margin.top + 20) + ")")
+        .style("text-anchor", "middle")
+        .text("Height in cm");
+    
+      // Y axis
+      var y = d3.scaleBand()
+        .range([ 0, height ])
+        .domain(data.map(function(d) { return d.Name; }))
+        .padding(.1);
+      chart2.append("g")
+        .call(d3.axisLeft(y))
+
+      // gridlines in x axis function
+      function make_x_gridlines() {		
+            return d3.axisBottom(x)
+                .ticks(5)
+        };
+
+      // gridlines in y axis function
+      function make_y_gridlines() {		
+          return d3.axisLeft(y)
+              .ticks(5)
+      };
+
+      // add the X gridlines
+      chart2.append("g")			
+          .attr("class", "grid")
+          .attr("transform", "translate(0," + height + ")")
+          .call(make_x_gridlines()
+              .tickSize(-height)
+              .tickFormat("")
+          );
+
+      // add the Y gridlines
+      chart2.append("g")			
+          .attr("class", "grid")
+          .call(make_y_gridlines()
+              .tickSize(-width)
+              .tickFormat("")
+          );
+
+    
+      //Bars
+      chart2.selectAll("myRect")
+        .data(data)
+        .enter()
+        .append("rect")
+        .attr("x", x(0) )
+        .attr("y", function(d) { return y(d.Name); })
+        .attr("width", function(d) { return x(d.Height); })
+        .attr("height", y.bandwidth() )
+        .attr("fill", function(d) {
+            if (d.EyeColor == "Black") {
+              return "#262626";
+            } else if (d.EyeColor == "Brown") {
+              return "#8b7355";
+            }
+            else {return "#7ac5cd";}
+        })
+    
+        // add legend   
+        chart2.append("circle")
+          .attr("cx",width+(margin.right/3))
+          .attr("cy",130)
+          .attr("r", 8)
+          .style("fill", '#262626')
+        chart2.append("circle")
+          .attr("cx",width+(margin.right/3))
+          .attr("cy",160)
+          .attr("r", 8)
+          .style("fill", '#8b7355')
+        chart2.append("circle")
+          .attr("cx",width+(margin.right/3))
+          .attr("cy",190)
+          .attr("r", 8)
+          .style("fill", '#7ac5cd')
+        chart2.append("text")
+          .attr("x", width+(margin.right/3)+10)
+          .attr("y", 130)
+          .text("Black Eyes")
+          .style("font-size", "12px")
+          .attr("alignment-baseline","middle")
+        chart2.append("text")
+          .attr("x", width+(margin.right/3)+10)
+          .attr("y", 160).text("Brown Eyes")
+          .style("font-size", "12px")
+          .attr("alignment-baseline","middle")
+        chart2.append("text")
+          .attr("x", width+(margin.right/3)+10)
+          .attr("y", 190).text("Blue Eyes")
+          .style("font-size", "12px")
+          .attr("alignment-baseline","middle")
+    
+    })
+    
+</script>

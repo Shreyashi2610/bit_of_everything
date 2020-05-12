@@ -1,0 +1,21 @@
+State,Gender ,Year,Name,Count
+FL,M,2019,Sam,1
+FL,F,2019,Ana,2
+FL,M,2018,Sam,3
+GA,M,2019,Reed,4
+GA,M,2019,Parth,1
+GA,F,2018,Jane,2
+AL,F,2018,Grace,3
+AL,F,2019,Grace,2
+NY,F,2019,Tiffany ,1
+NY,M,2019,Brian,2
+NY,M,2019,John ,1
+WA,M,2019,Joe,1
+WA,M,2019,Daniel,3
+WA,F,2017,Hannah,4
+CO,F,2018,Megan,2
+CO,F,2019,Kelly,5
+CO,M,2017,Oliver,3
+CA,M,2019,Ryan,1
+CA,F,2019,Jessie,2
+CA,F,2018,Kate,2
